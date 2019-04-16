@@ -20,7 +20,20 @@ def calculate_bounding_box(label: np.ndarray, x, y, ar_id, feature_map: FeatureM
     return probability, BoundingBox(x_coord, y_coord, width, height)
 
 
-def interpret_label(labels: [np.ndarray], feature_maps: [FeatureMap]):
+def get_sample_from_batchx(xs, sample_id):
+    return xs[sample_id, :, :, :]
+
+
+def get_sample_from_batchy(ys, sample_id):
+    outputs = []
+
+    for y in ys:
+        outputs.append(y[sample_id, :, :, :, :])
+
+    return outputs
+
+
+def interpret_label(labels: [np.ndarray], feature_maps: [FeatureMap]) -> [BoundingBox]:
     THRESHOLD = 0.5
 
     bounding_boxes = []

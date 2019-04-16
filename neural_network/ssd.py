@@ -8,11 +8,10 @@ NUM_BOXES = 5
 
 
 def ssd(inputs, num_class=1, training=True):
-    _, net = vgg_16(inputs, num_classes=0, is_training=training, spatial_squeeze=False)
+    _, net = vgg_16(inputs, num_classes=0, is_training=training, spatial_squeeze=False, dropout_keep_prob=1.0)
 
     inputs = net["vgg_16/conv5/conv5_3"]
-    transfer_layers = []
-    transfer_layers.append(net["vgg_16/conv4/conv4_3"])
+    transfer_layers = [net["vgg_16/conv4/conv4_3"]]
 
     with tf.variable_scope("orginaly_fc_layers"):
         inputs = slim.conv2d(inputs, 1024, [3, 3], scope="fc6")
@@ -20,20 +19,20 @@ def ssd(inputs, num_class=1, training=True):
         transfer_layers.append(inputs)
 
     with tf.variable_scope("ssd_layers"):
-        inputs = slim.conv2d(inputs, 256, [1, 1], 1, activation_fn=tf.nn.relu, padding="SAME", scope="conv8_1")
-        inputs = slim.conv2d(inputs, 512, [3, 3], 2, activation_fn=tf.nn.relu, padding="SAME", scope="conv8_2")
+        inputs = slim.conv2d(inputs, 256, [1, 1], 1, padding="SAME", scope="conv8_1")
+        inputs = slim.conv2d(inputs, 512, [3, 3], 2, padding="SAME", scope="conv8_2")
         transfer_layers.append(inputs)
 
-        inputs = slim.conv2d(inputs, 128, [1, 1], 1, activation_fn=tf.nn.relu, padding="SAME", scope="conv9_1")
-        inputs = slim.conv2d(inputs, 256, [3, 3], 2, activation_fn=tf.nn.relu, padding="SAME", scope="conv9_2")
+        inputs = slim.conv2d(inputs, 128, [1, 1], 1, padding="SAME", scope="conv9_1")
+        inputs = slim.conv2d(inputs, 256, [3, 3], 2, padding="SAME", scope="conv9_2")
         transfer_layers.append(inputs)
 
-        inputs = slim.conv2d(inputs, 128, [1, 1], 1, activation_fn=tf.nn.relu, padding="SAME", scope="conv10_1")
-        inputs = slim.conv2d(inputs, 256, [3, 3], 2, activation_fn=tf.nn.relu, padding="SAME", scope="conv10_2")
+        inputs = slim.conv2d(inputs, 128, [1, 1], 1, padding="SAME", scope="conv10_1")
+        inputs = slim.conv2d(inputs, 256, [3, 3], 2, padding="SAME", scope="conv10_2")
         transfer_layers.append(inputs)
 
-        inputs = slim.conv2d(inputs, 128, [1, 1], 1, activation_fn=tf.nn.relu, padding="VALID", scope="conv11_1")
-        inputs = slim.conv2d(inputs, 256, [3, 3], 1, activation_fn=tf.nn.relu, padding="VALID", scope="conv11_2")
+        inputs = slim.conv2d(inputs, 128, [1, 1], 1, padding="VALID", scope="conv11_1")
+        inputs = slim.conv2d(inputs, 256, [3, 3], 1, padding="VALID", scope="conv11_2")
         transfer_layers.append(inputs)
 
     with tf.variable_scope("outputs"):
@@ -43,7 +42,7 @@ def ssd(inputs, num_class=1, training=True):
         outputs = []
         for tl, fm in zip(transfer_layers, FEATURE_MAPS):
             result = slim.conv2d(tl, (num_class + 4) * len(fm.aspect_ratios), [3, 3],
-                                 activation_fn=tf.nn.softsign, padding="SAME")
+                                 activation_fn=None, padding="SAME")
 
             result = tf.reshape(result, (-1, fm.width, fm.height, len(fm.aspect_ratios), 5))
 
@@ -69,7 +68,7 @@ def ssd_true_loc_prediction_loss(labels, predictions):
 
 
 def ssd_false_loc_prediction_loss(labels, predictions):
-    RATIO = 9999
+    RATIO = 3
 
     with tf.variable_scope("negative_loss_layers"):
         false_mask = extract_found_probability(labels) < 0.5
@@ -111,7 +110,6 @@ def ssd_total_loss(labels, predictions):
 
     with tf.variable_scope("loss"):
         for label, prediction in zip(labels, predictions):
-
             total_loss = total_loss \
                          + ssd_true_loc_prediction_loss(label, prediction) \
                          + ssd_false_loc_prediction_loss(label, prediction)
