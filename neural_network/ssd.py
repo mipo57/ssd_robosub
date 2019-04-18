@@ -7,8 +7,8 @@ import numpy as np
 NUM_BOXES = 5
 
 
-def ssd(inputs, num_class=1, training=True):
-    _, net = vgg_16(inputs, num_classes=0, is_training=training, spatial_squeeze=False, dropout_keep_prob=1.0)
+def ssd(inputs, num_class=1, use_dropout=True):
+    _, net = vgg_16(inputs, num_classes=0, is_training=use_dropout, spatial_squeeze=False, dropout_keep_prob=1.0)
 
     inputs = net["vgg_16/conv5/conv5_3"]
     transfer_layers = [net["vgg_16/conv4/conv4_3"]]
@@ -41,9 +41,13 @@ def ssd(inputs, num_class=1, training=True):
         # L2 norm: http://mathworld.wolfram.com/L2-Norm.html
         outputs = []
         for tl, fm in zip(transfer_layers, FEATURE_MAPS):
-            result = slim.conv2d(tl, (num_class + 4) * len(fm.aspect_ratios), [3, 3],
-                                 activation_fn=None, padding="SAME")
+            result_probability = slim.conv2d(tl, len(fm.aspect_ratios), [3, 3], activation_fn=tf.nn.sigmoid,
+                                             padding="SAME")
 
+            result_bounding_box = slim.conv2d(tl, 4 * len(fm.aspect_ratios), [3, 3],
+                                              activation_fn=None, padding="SAME")
+
+            result = tf.concat([result_probability, result_bounding_box], axis=3)
             result = tf.reshape(result, (-1, fm.width, fm.height, len(fm.aspect_ratios), 5))
 
             outputs.append(result)
