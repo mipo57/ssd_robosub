@@ -46,7 +46,7 @@ class TrainImageGenerator:
         self.num_batches = self.num_samples // self.batch_size
 
     def generate_sample(self, index):
-        image_path = f'{self.images_path}/{self.annotations_table["file"][index]}'
+        image_path = f'{self.images_path}/{self.annotations_table["filename"][index]}'
         x = self.annotations_table["x"][index]
         y = self.annotations_table["y"][index]
         w = self.annotations_table["w"][index]

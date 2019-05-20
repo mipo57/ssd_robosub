@@ -25,6 +25,8 @@ class Trainer:
         gen = TrainImageGenerator(self.annotations_path, self.images_path,
                                   batch_size=self.batch_size, augumenter=NoAgumenter())
 
+        print(f"Found {gen.num_samples} samples!")
+
         xs = tf.placeholder(tf.float32, (None, 300, 300, 3))
         ys = [tf.placeholder(tf.float32, (None, fm.width, fm.height, len(fm.aspect_ratios), 5)) for fm in FEATURE_MAPS]
 
@@ -51,12 +53,13 @@ class Trainer:
                 now = datetime.now()
 
                 # Periodic saving
-                if (save_after_minutes > 0) and (now > last_epoch_save_time + timedelta(minutes=save_after_minutes)):
+                if (self.save_after_minutes > 0) and (now > last_epoch_save_time + timedelta(minutes=self.save_after_minutes)):
                     saver.save(sess, self.output_model_path + f"-epoch{i}")
-                    last_epoch_save_time = last_epoch_save_time + timedelta(minutes=save_after_minutes)
+                    last_epoch_save_time = datetime.now()
 
                 # Ending training after time
-                if (kill_after_minutes > 0) and (now > training_start_time + timedelta(minutes=self.kill_after_minutes)):
+                if (self.kill_after_minutes > 0) and (now > training_start_time + timedelta(minutes=self.kill_after_minutes)):
                     break
 
             saver.save(sess, self.output_model_path + "-final")
+            print(f"Model trained sucessfully. Latest version saved as {self.output_model_path}-final")

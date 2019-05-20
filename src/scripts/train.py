@@ -22,3 +22,5 @@ if __name__ == "__main__":
                       save_every_epoch=args.frequent_save, save_after_minutes=args.time_save, 
                       kill_after_minutes=args.time_kill)
 
+    trainer.fit()
+
