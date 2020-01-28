@@ -85,7 +85,7 @@ Shapely==1.6.4.post2
 six==1.12.0
 team==1.0
 tensorboard==1.13.1
-tensorflow==1.13.1
+tensorflow==1.15.2
 tensorflow-estimator==1.13.0
 tensorflow-serving-api==1.13.0
 tensorflow-serving-api-gpu==1.13.0
