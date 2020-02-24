@@ -3,7 +3,7 @@ appdirs==1.4.3
 asn1crypto==0.24.0
 astor==0.7.1
 bcrypt==3.1.6
-bleach==3.1.0
+bleach==3.1.1
 btrfsutil==1.1.0
 CacheControl==0.12.5
 cached-property==1.5.1
