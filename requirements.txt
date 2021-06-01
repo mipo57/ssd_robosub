@@ -91,7 +91,7 @@ tensorflow-serving-api==1.13.0
 tensorflow-serving-api-gpu==1.13.0
 termcolor==1.1.0
 texttable==1.6.1
-urllib3==1.24.1
+urllib3==1.26.5
 webencodings==0.5.1
 websocket-client==0.56.0
 Werkzeug==0.15.1
